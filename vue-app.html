@@ -1,0 +1,145 @@
+<html>
+  <head>
+    <style>
+      [v-cloak] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" v-cloak>
+      <button v-for="m in modes" @click="setMode(m)">{{ m }}</button>
+      <div v-if="mode == modes[0]">
+        <form action="">
+          <input type="number" v-model="inputtedNumber" />
+          <p>The inputted number is: {{ inputtedNumber }}</p>
+
+          <button @click.prevent="submit">Submit</button>
+        </form>
+        <h1 v-if="isPrime">The number is prime</h1>
+        <div v-if="isPrime == false">
+          The number is not prime, the factors of this number are:
+          <div v-for="n in factorsOfInputNumber">{{ n }}</div>
+        </div>
+      </div>
+
+      <div v-if="mode == modes[1]">
+        <h2>Find all prime numbers between range of numbers</h2>
+        <br />
+
+        <form v-if="showRangeForm">
+          <label for="minNumber">Input Min Number: </label>
+          <input type="number" v-model="minNumber" />
+          <label for="maxNumber">Input Max Number: </label>
+          <input type="number" v-model="maxNumber" />
+
+          <p v-if="!maxOk">Max needs to be under: {{ upperLimit }}</p>
+          <p v-if="!numberOrdersAreOk">Max should be higher than min</p>
+
+          <button @click.prevent="secondSubmit" :disabled="formNotOk">
+            Submit
+          </button>
+        </form>
+
+        <button v-if="!showRangeForm" @click="reset">
+          Click here to retry
+        </button>
+        <h1 v-for="n in primeNumbersInRange">{{ n }}</h1>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script>
+      let myVueApp = new Vue({
+        el: "#app",
+        data() {
+          return {
+            mode: "",
+            modes: ["single prime", "primes in range"],
+            minNumber: null,
+            maxNumber: null,
+            inputtedNumber: null,
+            factorsOfInputNumber: [],
+            primeNumbersInRange: [],
+            isPrime: null,
+            upperLimit: 100000,
+          };
+        },
+        mounted() {
+          this.mode = this.modes[0];
+        },
+        computed: {
+          showRangeForm() {
+            return !this.primeNumbersInRange.length;
+          },
+
+          // ensure inputs are validated - min < max, and the max < 100000
+          formOk() {
+            return this.numberOrdersAreOk && this.maxOk;
+          },
+
+          formNotOk() {
+            return !this.formOk;
+          },
+
+          numberOrdersAreOk() {
+            return this.minNumber < this.maxNumber;
+          },
+
+          maxOk() {
+            return this.maxNumber < this.upperLimit;
+          },
+        },
+        watch: {
+          maxNumber() {
+            if (this.maxNumber > this.upperLimit)
+              this.maxNumber = this.upperLimit;
+          },
+        },
+        methods: {
+          getFactorsOfNumber(number) {
+            let factors = [];
+            for (let i = 0; i <= number; i++) {
+              if (number % i == 0) {
+                factors.push(i);
+              }
+            }
+            return factors;
+          },
+          isPrimeNumber(number) {
+            return this.getFactorsOfNumber(number).length <= 2;
+          },
+          getPrimesInRange(min, max) {
+            let primes = [];
+
+            for (let i = min; i <= max; i++) {
+              if (this.isPrimeNumber(i)) {
+                primes.push(i);
+              }
+            }
+            return primes;
+          },
+          submit() {
+            this.isPrime = this.isPrimeNumber(this.inputtedNumber);
+            this.factorsOfInputNumber = this.getFactorsOfNumber(
+              this.inputtedNumber
+            );
+          },
+          secondSubmit() {
+            this.primeNumbersInRange = this.getPrimesInRange(
+              this.minNumber,
+              this.maxNumber
+            );
+          },
+          setMode(mode) {
+            this.mode = mode;
+          },
+          reset() {
+            this.primeNumbersInRange = [];
+            this.minNumber = 0;
+            this.maxNumber = 0;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
